@@ -1,0 +1,10 @@
+[build]
+  command = "npm run build"
+  publish = ".next"
+
+[build.environment]
+  NODE_VERSION = "18"
+  # Skip Prisma generate if no DATABASE_URL (for build)
+  PRISMA_SKIP_POSTINSTALL_GENERATE = "true"
+
+# Next.js is auto-detected by Netlify

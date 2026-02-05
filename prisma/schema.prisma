@@ -1,0 +1,340 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// User model for authentication
+model User {
+  id            String    @id @default(cuid())
+  name          String?
+  email         String?   @unique
+  emailVerified DateTime?
+  image         String?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  
+  accounts      Account[]
+  sessions      Session[]
+  deals         Deal[]
+  notifications Notification[]
+}
+
+model Account {
+  id                 String  @id @default(cuid())
+  userId             String
+  type               String
+  provider           String
+  providerAccountId  String
+  refresh_token      String?  @db.Text
+  access_token       String?  @db.Text
+  expires_at         Int?
+  token_type         String?
+  scope              String?
+  id_token           String?  @db.Text
+  session_state      String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+}
+
+// Core Deal model
+model Deal {
+  id          String     @id @default(cuid())
+  userId      String
+  status      DealStatus @default(ANALYSIS)
+  
+  // Property Information
+  propertyName    String
+  propertyAddress String
+  city            String
+  state           String
+  zipCode         String
+  propertyType    PropertyType
+  yearBuilt       Int?
+  squareFootage   Int?
+  lotSize         Float?
+  
+  // Unit Configuration
+  units           Int        @default(1)
+  bedrooms        Int?
+  bathrooms       Float?
+  
+  // Financial - Purchase
+  purchasePrice       Float
+  afterRepairValue    Float?
+  rehabCosts          Float?
+  closingCosts        Float?
+  
+  // Financial - Financing
+  loanAmount          Float?
+  interestRate        Float?
+  loanTermYears       Int?
+  downPayment         Float?
+  
+  // Financial - Income
+  monthlyRent         Float?
+  otherIncome         Float?
+  vacancyRate         Float?  @default(0.05)
+  
+  // Financial - Expenses
+  propertyTaxes       Float?
+  insurance           Float?
+  utilities           Float?
+  maintenance         Float?
+  propertyManagement  Float?
+  hoaFees             Float?
+  otherExpenses       Float?
+  
+  // Calculated Metrics (cached)
+  grossAnnualIncome   Float?
+  effectiveGrossIncome Float?
+  operatingExpenses   Float?
+  noi                 Float?
+  annualDebtService   Float?
+  dscr                Float?
+  capRate             Float?
+  cashOnCash          Float?
+  dealScore           Float?
+  
+  // Rent Estimation
+  estimatedRent       Float?
+  rentConfidence      Float?
+  
+  // Metadata
+  notes               String?   @db.Text
+  createdAt           DateTime  @default(now())
+  updatedAt           DateTime  @updatedAt
+  submittedAt         DateTime?
+  
+  // Relations
+  user                User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  comparables         Comparable[]
+  documents           Document[]
+  lenderSubmissions   LenderSubmission[]
+
+  @@index([userId])
+  @@index([status])
+  @@index([createdAt])
+}
+
+model Comparable {
+  id              String   @id @default(cuid())
+  dealId          String
+  
+  address         String
+  city            String
+  state           String
+  zipCode         String
+  
+  salePrice       Float?
+  rentPrice       Float?
+  squareFootage   Int?
+  bedrooms        Int?
+  bathrooms       Float?
+  yearBuilt       Int?
+  
+  distanceMiles   Float?
+  saleDate        DateTime?
+  
+  source          String?
+  sourceUrl       String?
+  
+  createdAt       DateTime @default(now())
+  
+  deal            Deal     @relation(fields: [dealId], references: [id], onDelete: Cascade)
+
+  @@index([dealId])
+}
+
+model Document {
+  id          String       @id @default(cuid())
+  dealId      String
+  
+  name        String
+  type        DocumentType
+  url         String
+  size        Int?
+  mimeType    String?
+  
+  createdAt   DateTime     @default(now())
+  
+  deal        Deal         @relation(fields: [dealId], references: [id], onDelete: Cascade)
+
+  @@index([dealId])
+}
+
+model Lender {
+  id              String   @id @default(cuid())
+  
+  name            String
+  contactName     String?
+  email           String?
+  phone           String?
+  
+  minLoanAmount   Float?
+  maxLoanAmount   Float?
+  minDSCR         Float?   @default(1.25)
+  maxLTV          Float?   @default(0.80)
+  
+  propertyTypes   String[] // Stored as array of PropertyType values
+  states          String[] // States they lend in
+  
+  notes           String?  @db.Text
+  isActive        Boolean  @default(true)
+  
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  
+  submissions     LenderSubmission[]
+}
+
+model LenderSubmission {
+  id              String           @id @default(cuid())
+  dealId          String
+  lenderId        String
+  
+  status          SubmissionStatus @default(DRAFT)
+  
+  submittedAt     DateTime?
+  respondedAt     DateTime?
+  
+  loanAmountRequested Float?
+  loanAmountApproved  Float?
+  rateOffered         Float?
+  termOffered         Int?
+  
+  notes           String?  @db.Text
+  
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  
+  deal            Deal     @relation(fields: [dealId], references: [id], onDelete: Cascade)
+  lender          Lender   @relation(fields: [lenderId], references: [id], onDelete: Cascade)
+
+  @@unique([dealId, lenderId])
+  @@index([dealId])
+  @@index([lenderId])
+}
+
+model Notification {
+  id          String           @id @default(cuid())
+  userId      String
+  
+  type        NotificationType
+  title       String
+  message     String
+  
+  dealId      String?
+  actionUrl   String?
+  
+  read        Boolean          @default(false)
+  
+  createdAt   DateTime         @default(now())
+  
+  user        User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([read])
+}
+
+model MarketData {
+  id              String   @id @default(cuid())
+  
+  zipCode         String
+  city            String
+  state           String
+  
+  medianHomePrice Float?
+  medianRent      Float?
+  rentGrowthRate  Float?
+  priceGrowthRate Float?
+  vacancyRate     Float?
+  capRate         Float?
+  population      Int?
+  
+  dataDate        DateTime
+  source          String?
+  
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@unique([zipCode, dataDate])
+  @@index([zipCode])
+  @@index([city, state])
+}
+
+// Enums
+enum DealStatus {
+  ANALYSIS
+  UNDERWRITING
+  BANK_READY
+  SUBMITTED
+  APPROVED
+  REJECTED
+  CLOSED
+  ARCHIVED
+}
+
+enum PropertyType {
+  SINGLE_FAMILY
+  MULTI_FAMILY
+  CONDO
+  TOWNHOUSE
+  DUPLEX
+  TRIPLEX
+  FOURPLEX
+  APARTMENT
+  COMMERCIAL
+  MIXED_USE
+}
+
+enum DocumentType {
+  PURCHASE_AGREEMENT
+  APPRAISAL
+  INSPECTION
+  RENT_ROLL
+  TAX_RETURN
+  BANK_STATEMENT
+  INSURANCE
+  TITLE
+  PHOTO
+  OTHER
+}
+
+enum SubmissionStatus {
+  DRAFT
+  SUBMITTED
+  UNDER_REVIEW
+  ADDITIONAL_INFO_NEEDED
+  APPROVED
+  REJECTED
+  WITHDRAWN
+}
+
+enum NotificationType {
+  DEAL_UPDATE
+  SUBMISSION_UPDATE
+  MARKET_ALERT
+  SYSTEM
+}
