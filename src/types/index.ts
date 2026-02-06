@@ -1,22 +1,126 @@
-// Re-export Prisma types
-export type {
-  Deal,
-  User,
-  Comparable,
-  Document,
-  Lender,
-  LenderSubmission,
-  Notification,
-  MarketData,
-} from '@prisma/client';
+// Enums (previously from Prisma)
+export enum DealStatus {
+  DRAFT = 'DRAFT',
+  ANALYZING = 'ANALYZING',
+  REVIEWED = 'REVIEWED',
+  SUBMITTED = 'SUBMITTED',
+  FUNDED = 'FUNDED',
+  CLOSED = 'CLOSED',
+  REJECTED = 'REJECTED',
+}
 
-export {
-  DealStatus,
-  PropertyType,
-  DocumentType,
-  SubmissionStatus,
-  NotificationType,
-} from '@prisma/client';
+export enum PropertyType {
+  SINGLE_FAMILY = 'SINGLE_FAMILY',
+  MULTI_FAMILY = 'MULTI_FAMILY',
+  CONDO = 'CONDO',
+  TOWNHOUSE = 'TOWNHOUSE',
+  COMMERCIAL = 'COMMERCIAL',
+  MIXED_USE = 'MIXED_USE',
+}
+
+export enum DocumentType {
+  PURCHASE_AGREEMENT = 'PURCHASE_AGREEMENT',
+  APPRAISAL = 'APPRAISAL',
+  INSPECTION = 'INSPECTION',
+  RENT_ROLL = 'RENT_ROLL',
+  TAX_RETURN = 'TAX_RETURN',
+  OTHER = 'OTHER',
+}
+
+export enum SubmissionStatus {
+  PENDING = 'PENDING',
+  UNDER_REVIEW = 'UNDER_REVIEW',
+  APPROVED = 'APPROVED',
+  REJECTED = 'REJECTED',
+  WITHDRAWN = 'WITHDRAWN',
+}
+
+export enum NotificationType {
+  DEAL_CREATED = 'DEAL_CREATED',
+  DEAL_UPDATED = 'DEAL_UPDATED',
+  SUBMISSION_STATUS = 'SUBMISSION_STATUS',
+  ALERT = 'ALERT',
+}
+
+// Base types (previously from Prisma)
+export interface User {
+  id: string;
+  email: string;
+  name?: string | null;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+export interface Deal {
+  id: string;
+  userId: string;
+  propertyName: string;
+  address: string;
+  propertyType: PropertyType;
+  status: DealStatus;
+  purchasePrice: number;
+  monthlyRent: number;
+  annualExpenses: number;
+  loanAmount?: number | null;
+  interestRate?: number | null;
+  loanTermYears?: number | null;
+  noi?: number | null;
+  dscr?: number | null;
+  capRate?: number | null;
+  dealScore?: number | null;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+export interface Document {
+  id: string;
+  dealId: string;
+  type: DocumentType;
+  fileName: string;
+  fileUrl: string;
+  createdAt: Date;
+}
+
+export interface Lender {
+  id: string;
+  name: string;
+  contactEmail?: string | null;
+  minDSCR?: number | null;
+  maxLTV?: number | null;
+  minLoanAmount?: number | null;
+  maxLoanAmount?: number | null;
+}
+
+export interface LenderSubmission {
+  id: string;
+  dealId: string;
+  lenderId: string;
+  status: SubmissionStatus;
+  submittedAt: Date;
+  responseAt?: Date | null;
+  notes?: string | null;
+}
+
+export interface Notification {
+  id: string;
+  userId: string;
+  type: NotificationType;
+  title: string;
+  message: string;
+  read: boolean;
+  createdAt: Date;
+}
+
+export interface MarketData {
+  id: string;
+  zipCode: string;
+  medianRent: number;
+  medianHomePrice: number;
+  avgCapRate: number;
+  populationGrowth?: number | null;
+  employmentGrowth?: number | null;
+  updatedAt: Date;
+}
 
 // Underwriting Input
 export interface UnderwritingInput {

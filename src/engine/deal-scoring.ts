@@ -191,10 +191,10 @@ function generateWeaknesses(breakdown: DealScoreResult['breakdown']): string[] {
  * Generate recommendation
  */
 function generateRecommendation(
-  totalScore: number,
+  _totalScore: number,
   grade: string,
-  strengths: string[],
-  weaknesses: string[]
+  _strengths: string[],
+  _weaknesses: string[]
 ): string {
   if (grade === 'A') {
     return 'Excellent investment opportunity. This deal meets or exceeds all key metrics. Recommend proceeding with due diligence.';

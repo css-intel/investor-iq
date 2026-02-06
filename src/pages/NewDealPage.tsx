@@ -4,7 +4,7 @@ import { MainLayout } from '@/components/layout/main-layout';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { ArrowLeft, Building2, MapPin, DollarSign, Percent, Calculator } from 'lucide-react';
-import { calculateDSCR, calculateNOI, calculateCapRate } from '@/engine/underwriting';
+import { calculateDSCR, calculateNOI, calculateCapRate, calculateAnnualDebtService } from '@/engine/underwriting';
 import { quickScore } from '@/engine/deal-scoring';
 
 export default function NewDealPage() {
@@ -34,7 +34,8 @@ export default function NewDealPage() {
   const loanTermYears = parseFloat(formData.loanTermYears) || 30;
 
   const noi = calculateNOI(annualRent, operatingExpenses);
-  const dscr = calculateDSCR(noi, loanAmount, interestRate, loanTermYears);
+  const annualDebtService = calculateAnnualDebtService(loanAmount, interestRate, loanTermYears);
+  const dscr = calculateDSCR(noi, annualDebtService);
   const capRate = calculateCapRate(noi, purchasePrice);
   const dealScore = purchasePrice > 0 ? quickScore(dscr, capRate, 0) : 0;
 
