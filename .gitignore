@@ -48,3 +48,6 @@ prisma/migrations/
 
 # Turbo
 .turbo
+
+# Local Netlify folder
+.netlify

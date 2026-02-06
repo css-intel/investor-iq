@@ -1,8 +1,5 @@
-'use client';
-
 import React, { useState } from 'react';
-import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import { Link, useLocation } from 'react-router-dom';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import {
@@ -29,7 +26,8 @@ const secondaryNav = [
 ];
 
 export function MainLayout({ children }: MainLayoutProps) {
-  const pathname = usePathname();
+  const location = useLocation();
+  const pathname = location.pathname;
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [userMenuOpen, setUserMenuOpen] = useState(false);
 
@@ -40,7 +38,7 @@ export function MainLayout({ children }: MainLayoutProps) {
       <aside className={cn('fixed left-0 top-0 z-50 h-full w-64 transform bg-card border-r transition-transform duration-300 lg:translate-x-0', sidebarOpen ? 'translate-x-0' : '-translate-x-full')}>
         <div className="flex h-full flex-col">
           <div className="flex h-16 items-center justify-between px-4 border-b">
-            <Link href="/" className="flex items-center space-x-2">
+            <Link to="/" className="flex items-center space-x-2">
               <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary text-primary-foreground font-bold">IQ</div>
               <span className="text-xl font-bold">Investor IQ</span>
             </Link>
@@ -50,19 +48,19 @@ export function MainLayout({ children }: MainLayoutProps) {
           </div>
 
           <div className="p-4">
-            <Link href="/deals/new"><Button className="w-full" size="lg"><Plus className="mr-2 h-4 w-4" />New Deal</Button></Link>
+            <Link to="/deals/new"><Button className="w-full" size="lg"><Plus className="mr-2 h-4 w-4" />New Deal</Button></Link>
           </div>
 
           <nav className="flex-1 space-y-1 px-3">
             <div className="pb-2"><p className="px-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Main Menu</p></div>
             {navigation.map((item) => (
-              <Link key={item.name} href={item.href} className={cn('flex items-center px-3 py-2 text-sm font-medium rounded-lg transition-colors', pathname === item.href ? 'bg-primary text-primary-foreground' : 'text-muted-foreground hover:bg-muted hover:text-foreground')}>
+              <Link key={item.name} to={item.href} className={cn('flex items-center px-3 py-2 text-sm font-medium rounded-lg transition-colors', pathname === item.href ? 'bg-primary text-primary-foreground' : 'text-muted-foreground hover:bg-muted hover:text-foreground')}>
                 <item.icon className="mr-3 h-5 w-5" />{item.name}
               </Link>
             ))}
             <div className="pt-6 pb-2"><p className="px-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Account</p></div>
             {secondaryNav.map((item) => (
-              <Link key={item.name} href={item.href} className={cn('flex items-center px-3 py-2 text-sm font-medium rounded-lg transition-colors', pathname === item.href ? 'bg-primary text-primary-foreground' : 'text-muted-foreground hover:bg-muted hover:text-foreground')}>
+              <Link key={item.name} to={item.href} className={cn('flex items-center px-3 py-2 text-sm font-medium rounded-lg transition-colors', pathname === item.href ? 'bg-primary text-primary-foreground' : 'text-muted-foreground hover:bg-muted hover:text-foreground')}>
                 <item.icon className="mr-3 h-5 w-5" />{item.name}
               </Link>
             ))}
@@ -106,8 +104,8 @@ export function MainLayout({ children }: MainLayoutProps) {
                       <div className="px-2 py-1 text-xs text-muted-foreground">john@investoriq.com</div>
                     </div>
                     <div className="border-t">
-                      <Link href="/profile" className="flex items-center px-4 py-2 text-sm hover:bg-muted" onClick={() => setUserMenuOpen(false)}><User className="mr-2 h-4 w-4" />Profile</Link>
-                      <Link href="/settings" className="flex items-center px-4 py-2 text-sm hover:bg-muted" onClick={() => setUserMenuOpen(false)}><Settings className="mr-2 h-4 w-4" />Settings</Link>
+                      <Link to="/profile" className="flex items-center px-4 py-2 text-sm hover:bg-muted" onClick={() => setUserMenuOpen(false)}><User className="mr-2 h-4 w-4" />Profile</Link>
+                      <Link to="/settings" className="flex items-center px-4 py-2 text-sm hover:bg-muted" onClick={() => setUserMenuOpen(false)}><Settings className="mr-2 h-4 w-4" />Settings</Link>
                     </div>
                     <div className="border-t">
                       <button className="flex w-full items-center px-4 py-2 text-sm text-destructive hover:bg-muted"><LogOut className="mr-2 h-4 w-4" />Sign out</button>
