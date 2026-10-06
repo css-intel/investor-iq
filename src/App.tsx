@@ -1,3 +1,4 @@
+import { lazy, Suspense } from 'react'
 import { Routes, Route } from 'react-router-dom'
 import Dashboard from './pages/Dashboard'
 import DealsPage from './pages/DealsPage'
@@ -7,9 +8,13 @@ import MarketDataPage from './pages/MarketDataPage'
 import LendersPage from './pages/LendersPage'
 import ReportsPage from './pages/ReportsPage'
 
+const DemoPage = lazy(() => import('./pages/DemoPage'))
+
 function App() {
   return (
+    <Suspense fallback={<div style={{ background: '#070b14', minHeight: '100vh' }} />}>
     <Routes>
+      <Route path="/demo" element={<DemoPage />} />
       <Route path="/" element={<Dashboard />} />
       <Route path="/deals" element={<DealsPage />} />
       <Route path="/deals/new" element={<NewDealPage />} />
@@ -18,6 +23,7 @@ function App() {
       <Route path="/lenders" element={<LendersPage />} />
       <Route path="/reports" element={<ReportsPage />} />
     </Routes>
+    </Suspense>
   )
 }
 
